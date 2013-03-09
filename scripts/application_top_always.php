@@ -1,4 +1,7 @@
 <?php
+/* RW */ require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_fe.php');
+/* RW */ require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_befe.php');
+
 // when having a multi category based url get the deepest categories_id and save it as $this->get['categories_id']		
 /*
 if (is_array($this->get['categories_id']))
