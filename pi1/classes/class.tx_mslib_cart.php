@@ -1554,22 +1554,38 @@ class tx_mslib_cart extends tslib_pibase {
 		return $this->cart['user']['countries_id'];
 	}	
 	function getHtmlCartContents($sectionTemplateType='') {
+		$disable_product_status_col = false;
 		switch ($sectionTemplateType) {
 			case 'adminNotificationPopup':
-				if ($this->conf['order_details_table_adminNotificationPopup_tmpl_path'])  $template = $this->cObj->fileResource($this->conf['order_details_table_adminNotificationPopup_tmpl_path']);
-				else $template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_adminNotificationPopup.tmpl');					
+				if ($this->conf['order_details_table_adminNotificationPopup_tmpl_path']) {
+					$template = $this->cObj->fileResource($this->conf['order_details_table_adminNotificationPopup_tmpl_path']);
+				} else {
+					$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_adminNotificationPopup.tmpl');					
+				}
 			break;
 			case 'ajaxGetMethodCosts':
-				if ($this->conf['order_details_table_ajaxGetMethodCosts_tmpl_path'])  $template = $this->cObj->fileResource($this->conf['order_details_table_ajaxGetMethodCosts_tmpl_path']);
-				else $template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_site.tmpl');			
+				if ($this->conf['order_details_table_ajaxGetMethodCosts_tmpl_path']) {
+					$template = $this->cObj->fileResource($this->conf['order_details_table_ajaxGetMethodCosts_tmpl_path']);
+				} else {
+					$disable_product_status_col = true;
+					$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_site.tmpl');			
+				}
 			break;			
 			default:
 				if ($sectionTemplateType) {
-					if ($this->conf['order_details_table_'.$sectionTemplateType.'_tmpl_path'])  $template = $this->cObj->fileResource($this->conf['order_details_table_'.$sectionTemplateType.'_tmpl_path']);
-					else $template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_site.tmpl');		
+					if ($this->conf['order_details_table_'.$sectionTemplateType.'_tmpl_path']) {
+						$template = $this->cObj->fileResource($this->conf['order_details_table_'.$sectionTemplateType.'_tmpl_path']);
+					} else {
+						$disable_product_status_col = true;
+						$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_site.tmpl');		
+					}
 				} else {
-					if ($this->conf['order_details_table_site_tmpl_path'])  $template = $this->cObj->fileResource($this->conf['order_details_table_site_tmpl_path']);
-					else $template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_site.tmpl');		
+					if ($this->conf['order_details_table_site_tmpl_path']) {
+						$template = $this->cObj->fileResource($this->conf['order_details_table_site_tmpl_path']);
+					} else {
+						$disable_product_status_col = true;
+						$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath('multishop').'templates/order_details_table_site.tmpl');		
+					}
 				}
 			break;
 		}
@@ -1648,6 +1664,22 @@ class tx_mslib_cart extends tslib_pibase {
 		$subparts['PAYMENT_COSTS_WRAPPER']	= $this->cObj->getSubpart($subparts['template'], '###PAYMENT_COSTS_WRAPPER###');
 		$subparts['GRAND_TOTAL_WRAPPER']	= $this->cObj->getSubpart($subparts['template'], '###GRAND_TOTAL_WRAPPER###');
 
+		// remove the status col
+		if ($disable_product_status_col) {
+			$subProductStatusPart=array();
+			$subProductStatusPart['ITEMS_HEADER_PRODUCT_STATUS_WRAPPER'] = $this->cObj->getSubpart($subparts['ITEMS_HEADER_WRAPPER'], '###ITEMS_HEADER_PRODUCT_STATUS_WRAPPER###');
+			$subProductStatus=array();
+			$subProductStatus['###ITEMS_HEADER_PRODUCT_STATUS_WRAPPER###'] = '';
+			$subparts['ITEMS_HEADER_WRAPPER']=$this->cObj->substituteMarkerArrayCached($subparts['ITEMS_HEADER_WRAPPER'], array(), $subProductStatus);
+			
+			$subProductStatusPart=array();
+			$subProductStatusPart['ITEMS_PRODUCT_STATUS_WRAPPER'] = $this->cObj->getSubpart($subparts['ITEMS_WRAPPER'], '###ITEMS_PRODUCT_STATUS_WRAPPER###');
+			$subProductStatus=array();
+			$subProductStatus['###ITEMS_PRODUCT_STATUS_WRAPPER###'] = '';
+			$subparts['ITEMS_WRAPPER']=$this->cObj->substituteMarkerArrayCached($subparts['ITEMS_WRAPPER'], array(), $subProductStatus);
+		}
+		// end of remove
+		
 		$subpartArray=array();
 		//ITEMS_HEADER_WRAPPER
 		$markerArray['HEADING_PRODUCTS_NAME'] = ucfirst($this->pi_getLL('product'));

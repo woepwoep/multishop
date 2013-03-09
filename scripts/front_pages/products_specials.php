@@ -96,10 +96,10 @@ if ($contentType=='specials_listing_page') {
 			if ($this->ms['MODULES']['FLAT_DATABASE']) {
 				$tbl='pf.';
 			} else {
-				$tbl='p2c.';			
+				$tbl='p2c.';	
 			}
 			$filter[]='('.$tbl.'categories_id IN ('.implode(",",$cats).'))';
-		}		
+		}
 		$pageset=mslib_fe::getProductsPageSet($filter,$offset,$this->limit,$orderby,$having,$select,$where,0,array(),array(),'products_specials');
 		$products=$pageset['products'];	
 		if (!$products) {
@@ -169,8 +169,36 @@ if ($contentType=='specials_listing_page') {
 				$filter[]='sstatus=1';
 			} else {
 				$filter[]='s.status=1';
-			}		
-			$orderby='rand()';
+			}
+			//$orderby='rand()';
+			
+			$str="SELECT p2c.categories_id, p.products_id FROM tx_multishop_products p, tx_multishop_specials s, tx_multishop_products_to_categories p2c where p.products_status=1 and p.products_id=s.products_id and p.products_id=p2c.products_id order by rand() limit ".$limit;
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$product_ids=array();
+			while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
+				
+				$all_cat_enabled = true;
+				$cats=mslib_fe::Crumbar($row['categories_id']);
+				$cats=array_reverse($cats);
+				foreach ($cats as $catdata) {
+					if (!$catdata['status']) {
+						$all_cat_enabled = false;
+					}
+				}
+				if ($all_cat_enabled) {
+					$product_ids[]=$row['products_id'];
+				}
+			}
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$tbl='';
+			} else {
+				$tbl='p.';
+			}
+			if (count($product_ids)) {
+				$filter[]="(".$tbl."products_id IN (".implode(",",$product_ids)."))";
+			} else {
+				$this->no_database_results=1;
+			}
 		}
 		if ($this->no_database_results) {
 			return '';

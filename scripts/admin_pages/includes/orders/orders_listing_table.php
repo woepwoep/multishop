@@ -42,8 +42,15 @@ $cb_ctr = 0;
 $tmp.=$headercol;
 foreach ($tmporders as $order) {
 	$edit_order_popup_width = 980;
+	if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+		$edit_order_popup_width += 70;
+	}
 	if ($this->ms['MODULES']['ORDER_EDIT'] && !$order['is_locked']) {
-		$edit_order_popup_width = 1050;
+		if ($edit_order_popup_width > 980) {
+			$edit_order_popup_width += 155;
+		} else {
+			$edit_order_popup_width += 70;
+		}
 	}
 	
 	//	$order=mslib_fe::getOrder($order_row['orders_id']);
@@ -54,13 +61,12 @@ foreach ($tmporders as $order) {
 	<label for="checkbox_'.$order['orders_id'].'"></label>
 	<input type="checkbox" name="selected_orders[]" class="PrettyInput" id="checkbox_'.$order['orders_id'].'" value="'.$order['orders_id'].'">
 	</td>';
-
 	$tmp.='<th align="right" nowrap><a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: '.$edit_order_popup_width.', height: browser_height} )" title="'.htmlspecialchars($this->pi_getLL('loading')).'" class="tooltip" rel="'.$order['orders_id'].'">'.$order['orders_id'].'</a></th>';
 	if ($this->masterShop) {				
 		$tmp.='<td align="left" nowrap>'.mslib_fe::getShopNameByPageUid($order['page_uid']).'</td>';
 	}
 	$tmp.='<td align="left" nowrap><a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: '.$edit_order_popup_width.', height: browser_height} )" title="'.htmlspecialchars($this->pi_getLL('loading')).'" class="tooltip" rel="'.$order['orders_id'].'">'.$order['billing_name'].'</a>
-	</td>';	
+	</td>';
 	
 	$tmp.='<td align="right" nowrap>'.strftime("%x %X",  $order['crdate']).'</td>';
 	$tmp.='<td align="right" nowrap id="order_amount_'.$order['orders_id'].'">'.mslib_fe::amount2Cents($order['grand_total'],0).'</td>';	
@@ -132,8 +138,6 @@ foreach ($tmporders as $order) {
 	}
 }
 
-
-
 $tmp.='
 <tr>
 	<th>
@@ -178,7 +182,7 @@ if (is_array($all_orders_status)) {
 	}
 }
 $formFields['update_to_order_status'] .= '</select>';
-	
+
 // extra input
 if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_orders.php']['adminOrdersActionExtraInputProc'])) {
 	$params = array('formFields' => &$formFields);
@@ -210,7 +214,7 @@ $headerData .= '
 						data:   "tx_multishop_pi1[orders_id]="+orders_id+"&tx_multishop_pi1[orders_status_id]="+orders_status_id, 
 						success: function(msg) {
 						}
-				}); 
+				});
 			}
 		});
 

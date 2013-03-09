@@ -342,23 +342,22 @@ if (!empty($this->post['order_date_from']) && !empty($this->post['order_date_til
 	
 	$start_time 	= strtotime($fy . '-' . $fm . '-' . $fd .' ' . $from_time);
 	$end_time 		= strtotime($ty . '-' . $tm . '-' . $td .' ' . $till_time);
-	
-	if ($this->post['search_by_status_last_modified']) $column='o.status_last_modified';
-	else $column='o.crdate';
+	if ($this->post['search_by_status_last_modified']) {
+		$column='o.status_last_modified';
+	} else {
+		$column='o.crdate';
+	}
 	$filter[] 		= $column." BETWEEN '".$start_time."' and '".$end_time."'";
 }
 //print_r($filter);
 //print_r($this->post);
 //die();
-
 if ($this->post['orders_status_search'] > 0) {
 	$filter[]="(o.status='".$this->post['orders_status_search']."')";
 }
-
 if ($this->cookie['paid_orders_only']) {
 	$filter[]="(o.paid='1')";		
 }
-
 if (!$this->masterShop) {
 	$filter[]='o.page_uid='.$this->shop_pid;
 }
@@ -368,16 +367,12 @@ $orderby[]='o.orders_id desc';
 if ($this->post['tx_multishop_pi1']['by_phone']) {
 	$filter[]='o.by_phone=1';
 }
-
 if ($this->post['tx_multishop_pi1']['is_proposal']) {
 	$filter[]='o.is_proposal=1';
-	
 } else {
 	$filter[]='o.is_proposal=0';
 }
-
 $pageset=mslib_fe::getOrdersPageSet($filter,$offset,$this->post['limit'],$orderby,$having,$select,$where,$from);
-
 $tmporders=$pageset['orders'];		
 if ($pageset['total_rows'] > 0) {
 	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/orders/orders_listing_table.php');	
@@ -389,7 +384,6 @@ if ($pageset['total_rows'] > 0) {
 } else {
 	$tmp=$this->pi_getLL('no_orders_found').'.';
 }
-
 $tabs 						 = array();
 $tabs['Orders_By_Date'] 	 = array($this->pi_getLL('orders'),$tmp);
 $tmp 						 = '';

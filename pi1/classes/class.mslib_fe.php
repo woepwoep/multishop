@@ -3672,6 +3672,7 @@ UENFdExTQUtDVlJJU1ZNZ1YwVkNVMGxVUlNCSlV5QlFUMWRGVWtWRUlFSlpJRlJaVUU4eklFMVZURlJK
 						''            // LIMIT ...
 		);	
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+//		error_log($res);
 		$pages=array();
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0)
 		{

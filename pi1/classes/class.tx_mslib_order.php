@@ -798,6 +798,9 @@ class tx_mslib_order extends tslib_pibase {
 				$final_price=($product['qty']*$product['final_price']);
 			}		
 			$item['ITEM_TOTAL'] = mslib_fe::amount2Cents($final_price).$subprices;
+			if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0 && $template_type == 'order_history_site') {
+				$item['ITEM_PRODUCT_STATUS'] = mslib_fe::getOrderStatusName($product['status']);
+			}
 			// GRAND TOTAL CALCULATIONS
 			$subtotal = ($subtotal+$price);	
 			$subtotal_tax = ($subtotal_tax+$product['products_tax_data']['total_tax']+$product['products_tax_data']['total_attributes_tax']);
@@ -811,13 +814,13 @@ class tx_mslib_order extends tslib_pibase {
 				$params = array (
 					'item' => &$item,
 					'order' => &$order,
-					'product' => &$product,					
+					'product' => &$product,	
 					'template_type' => &$template_type
 				); 
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.tx_mslib_order']['printOrderDetailsTableItemPreProc'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
-			}			
+			}
 			$itemsWrapper[]=$item;
 		}
 		
@@ -833,16 +836,34 @@ class tx_mslib_order extends tslib_pibase {
 		$subparts['GRAND_TOTAL_WRAPPER']	= $this->cObj->getSubpart($subparts['template'], '###GRAND_TOTAL_WRAPPER###');
 		$subparts['TAX_COSTS_WRAPPER']		= $this->cObj->getSubpart($subparts['template'], '###TAX_COSTS_WRAPPER###');
 		$subparts['DISCOUNT_WRAPPER']		= $this->cObj->getSubpart($subparts['template'], '###DISCOUNT_WRAPPER###');
-
+		
+		if (!$this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] || $template_type != 'order_history_site') {
+			$subProductStatusPart=array();
+			$subProductStatusPart['ITEMS_HEADER_PRODUCT_STATUS_WRAPPER'] = $this->cObj->getSubpart($subparts['ITEMS_HEADER_WRAPPER'], '###ITEMS_HEADER_PRODUCT_STATUS_WRAPPER###');
+			$subProductStatus=array();
+			$subProductStatus['###ITEMS_HEADER_PRODUCT_STATUS_WRAPPER###'] = '';
+			$subparts['ITEMS_HEADER_WRAPPER']=$this->cObj->substituteMarkerArrayCached($subparts['ITEMS_HEADER_WRAPPER'], array(), $subProductStatus);
+			
+			$subProductStatusPart=array();
+			$subProductStatusPart['ITEMS_PRODUCT_STATUS_WRAPPER'] = $this->cObj->getSubpart($subparts['ITEMS_WRAPPER'], '###ITEMS_PRODUCT_STATUS_WRAPPER###');
+			$subProductStatus=array();
+			$subProductStatus['###ITEMS_PRODUCT_STATUS_WRAPPER###'] = '';
+			$subparts['ITEMS_WRAPPER']=$this->cObj->substituteMarkerArrayCached($subparts['ITEMS_WRAPPER'], array(), $subProductStatus);
+		}
+		
 		$subpartArray=array();
-
+		
 		//ITEMS_HEADER_WRAPPER
 		$markerArray=array();
 		$markerArray['HEADING_PRODUCTS_NAME'] = ucfirst($this->pi_getLL('product'));
 		$markerArray['HEADING_SKU'] = $this->pi_getLL('sku','SKU');
 		$markerArray['HEADING_QUANTITY'] = $this->pi_getLL('qty');
-		$markerArray['HEADING_TOTAL'] = $this->pi_getLL('total');		
+		$markerArray['HEADING_TOTAL'] = $this->pi_getLL('total');
+		if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0 && $template_type == 'order_history_site') {
+			$markerArray['HEADING_PRODUCT_STATUS'] = $this->pi_getLL('order_product_status');
+		}
 		$subpartArray['###ITEMS_HEADER_WRAPPER###'] = $this->cObj->substituteMarkerArray($subparts['ITEMS_HEADER_WRAPPER'], $markerArray,'###|###');
+		
 		//ITEMS_HEADER_WRAPPER EOF
 		//ITEMS_WRAPPER
 		$keys=array();
@@ -852,9 +873,11 @@ class tx_mslib_order extends tslib_pibase {
 		$keys[]='ITEM_QUANTITY';
 		$keys[]='ITEM_SKU';
 		$keys[]='ITEM_TOTAL';
-		foreach ($itemsWrapper as $item)
-		{
-			$markerArray=array();				
+		if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0 && $template_type == 'order_history_site') {
+			$keys[]='ITEM_PRODUCT_STATUS';
+		}
+		foreach ($itemsWrapper as $item) {
+			$markerArray=array();		
 			foreach ($keys as $key) {
 				$markerArray[$key] = $item[$key];
 			}

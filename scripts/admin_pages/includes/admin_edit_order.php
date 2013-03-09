@@ -7,25 +7,18 @@ if (is_numeric($this->get['orders_id'])) {
 				$customer_address['country'] 	= $order['billing_country'];
 				$customer_address['region'] 	= $order['billing_region'];
 			}
-		
 			$country = mslib_fe::getCountryByName($customer_address['country']);
-		
 			if (!empty($customer_address['region'])) {
 				$zone = mslib_fe::getRegionByName($customer_address['region']);
-		
 			} else {
 				$zone['zn_country_iso_nr'] = 0;
 			}
 		}
-		
-		
 		if ($this->ms['MODULES']['ORDER_EDIT'] and !$order['is_locked']) {
 			$delivery_country=mslib_fe::getCountryByName($this->post['delivery_country']);
 			$updateArray=array();
-			
 			if ($this->post['shipping_method']) {
 				$shipping_method 	= mslib_fe::getShippingMethod($this->post['shipping_method']);
-				
 				if (empty($order['orders_tax_data'])) {
 					// temporary call, replacing the inner tax_ruleset inside the getShippingMethod
 					$tax_ruleset 							= mslib_fe::taxRuleSet($shipping_method['tax_id'], 0, $country['cn_iso_nr'], $zone['zn_country_iso_nr']);
@@ -33,13 +26,11 @@ if (is_numeric($this->get['orders_id'])) {
 					$shipping_method['country_tax_rate'] 	= ($tax_ruleset['country_tax_rate']/100);
 					$shipping_method['region_tax_rate'] 	= ($tax_ruleset['state_tax_rate']/100);
 				}
-				
 				if ($this->post['tx_multishop_pi1']['shipping_method_costs']) {
 					$price = $this->post['tx_multishop_pi1']['shipping_method_costs'];
 				} else {
 					$price = mslib_fe::getShippingCosts($delivery_country['cn_iso_nr'],$this->post['shipping_method']);
-				}
-									
+				}			
 				if ($price > 0) {
 					if (strstr($price,"%")) {
 						// calculate total shipping costs based by %
@@ -49,14 +40,12 @@ if (is_numeric($this->get['orders_id'])) {
 								$subtotal=$subtotal+($value['qty']*$value['final_price']);
 							}
 						}
-						
 						if ($subtotal) {
 							$percentage=str_replace("%",'',$price);
 							if ($percentage) {
 								$price	= ($subtotal/100*$percentage);
 							}
 						}
-						
 					} else {
 						if (!strstr($price,"%")) {
 							if (strstr($price,",")) {
@@ -64,35 +53,29 @@ if (is_numeric($this->get['orders_id'])) {
 								// calculate total costs
 								$subtotal = mslib_fe::getOrderTotalPrice($this->get['orders_id'],1);							
 								$count=0;
-								
 								foreach ($steps as $step) {							
 									// the   value 200:15 means below 200 euro the shipping costs are 15 euro, above and equal 200 euro the shipping costs are 0 euro
 									$split=explode(":",$step);
 									if (is_numeric($split[0])) {
 										if ($count==0) {
 											$price=$split[1];
-										}
-										
+										}	
 										if ($subtotal > $split[0]) {
 											$price=$split[1];
 											next();
 										}
-									}
-									
+									}					
 									$count++;
 								}
 							}
 						}
 					}				
 				}
-							
 				if ($price) {
 					$updateArray['shipping_method_costs']	=	$price;
 				} else {
 					$updateArray['shipping_method_costs']	=	0;			
 				}
-				
-				
 				if ($shipping_method['tax_id'] && $updateArray['shipping_method_costs']) {
 					$shipping_tax['shipping_total_tax_rate'] = $shipping_method['tax_rate'];
 						
@@ -104,7 +87,6 @@ if (is_numeric($this->get['orders_id'])) {
 						$shipping_tax['shipping_country_tax_rate'] 		= 0;
 						$shipping_tax['shipping_country_tax'] 			= 0;
 					}
-						
 					if ($shipping_method['region_tax_rate']) {
 						$shipping_tax['shipping_region_tax_rate'] 		= $shipping_method['region_tax_rate'];
 						$shipping_tax['shipping_region_tax'] 			= mslib_fe::taxDecimalCrop($updateArray['shipping_method_costs'] * ($shipping_method['region_tax_rate']));
@@ -112,14 +94,12 @@ if (is_numeric($this->get['orders_id'])) {
 					} else {
 						$shipping_tax['shipping_region_tax_rate'] 		= 0;
 						$shipping_tax['shipping_region_tax'] 			= 0;
-					}
-						
+					}	
 					if ($shipping_tax['shipping_region_tax'] && $shipping_tax['shipping_country_tax']) {
 						$shipping_tax['shipping_tax'] 				= $shipping_tax['shipping_country_tax'] + $shipping_tax['shipping_region_tax'];
 					} else {
 						$shipping_tax['shipping_tax'] 				= mslib_fe::taxDecimalCrop($updateArray['shipping_method_costs'] * ($shipping_method['tax_rate']));
-					}
-						
+					}						
 				} else {
 					$shipping_tax['shipping_tax'] 					= 0;
 					$shipping_tax['shipping_country_tax'] 			= 0;
@@ -129,15 +109,11 @@ if (is_numeric($this->get['orders_id'])) {
 					$shipping_tax['shipping_country_tax_rate'] 		= 0;
 					$shipping_tax['shipping_region_tax_rate'] 		= 0;
 				}
-				
 				$updateArray['shipping_method']					=	$shipping_method['code'];
 				$updateArray['shipping_method_label']			=	$shipping_method['name'];
 			}
-			
-			
 			if ($this->post['payment_method']) {
 				$payment_method = mslib_fe::getPaymentMethod($this->post['payment_method']);
-				
 				if (empty($order['orders_tax_data'])) {
 					// temporary call, replacing the inner tax_ruleset inside the getPaymentMethod
 					$tax_ruleset 						= mslib_fe::taxRuleSet($payment_method['tax_id'], 0, $country['cn_iso_nr'], $zone['zn_country_iso_nr']);
@@ -145,13 +121,11 @@ if (is_numeric($this->get['orders_id'])) {
 					$payment_method['country_tax_rate'] = ($tax_ruleset['country_tax_rate']/100);
 					$payment_method['region_tax_rate'] 	= ($tax_ruleset['state_tax_rate']/100);
 				}
-				
 				if ($this->post['tx_multishop_pi1']['payment_method_costs']) {
 					$price = $this->post['tx_multishop_pi1']['payment_method_costs'];
 				} else {
 					$price = $payment_method['handling_costs'];
 				}
-										
 				if ($price) {
 					if (!strstr($price,"%")) {
 						$user['payment_method_costs']	=	$price;			
@@ -171,54 +145,42 @@ if (is_numeric($this->get['orders_id'])) {
 							}
 						}
 					}
-										
 				} else	{
 					$price	=	0;
 				}
-				
 				$updateArray['payment_method_costs']				=	$price;
-				
 				if ($payment_method['tax_id'] && $updateArray['payment_method_costs']) {
 					$payment_tax['payment_total_tax_rate'] 			= $payment_method['tax_rate'];
-						
 					if ($payment_method['country_tax_rate']) {
 						$payment_tax['payment_country_tax_rate'] 	= $payment_method['country_tax_rate'];
 						$payment_tax['payment_country_tax'] 		= mslib_fe::taxDecimalCrop($updateArray['payment_method_costs'] * ($payment_method['country_tax_rate']));
-				
 					} else {
 						$payment_tax['payment_country_tax_rate'] 	= 0;
 						$payment_tax['payment_country_tax'] 		= 0;
 					}
-						
 					if ($payment_method['region_tax_rate']) {
 						$payment_tax['payment_region_tax_rate'] 	= $payment_method['region_tax_rate'];
 						$payment_tax['payment_region_tax'] 			= mslib_fe::taxDecimalCrop($updateArray['payment_method_costs'] * ($payment_method['region_tax_rate']));
-				
 					} else {
 						$payment_tax['payment_region_tax_rate'] 	= 0;
 						$payment_tax['payment_region_tax'] 			= 0;
 					}
-						
 					if ($payment_tax['payment_region_tax'] && $payment_tax['payment_country_tax']) {
 						$payment_tax['payment_tax'] 				= $user['payment_country_tax'] + $user['payment_region_tax'];
 					} else {
 						$payment_tax['payment_tax'] 				= mslib_fe::taxDecimalCrop($updateArray['payment_method_costs'] * ($payment_method['tax_rate']));
 					}
-				
 				} else {
 					$payment_tax['payment_tax'] 					= 0;
 					$payment_tax['payment_country_tax'] 			= 0;
 					$payment_tax['payment_region_tax'] 				= 0;
-							
 					$payment_tax['payment_total_tax_rate'] 			= 0;
 					$payment_tax['payment_country_tax_rate'] 		= 0;
 					$payment_tax['payment_region_tax_rate'] 		= 0;
 				}
-				
 				$updateArray['payment_method']						=	$payment_method['code'];
 				$updateArray['payment_method_label']				=	$payment_method['name'];
 			}
-			
 			$keys=array();
 			$keys[]='company';	
 			$keys[]='name';	
@@ -233,8 +195,7 @@ if (is_numeric($this->get['orders_id'])) {
 			$keys[]='telephone';	
 			$keys[]='mobile';	
 			$keys[]='fax';	
-			foreach ($keys as $key)
-			{
+			foreach ($keys as $key) {
 				$string='billing_'.$key;
 				$updateArray[$string]=$this->post['tx_multishop_pi1'][$string];
 				$string='delivery_'.$key;
@@ -242,58 +203,46 @@ if (is_numeric($this->get['orders_id'])) {
 			}
 			$updateArray['billing_address']=preg_replace('/ +/', ' ',$updateArray['billing_street_name'].' '.$updateArray['billing_address_number'].' '.$updateArray['billing_address_ext']);
 			$updateArray['delivery_address']=preg_replace('/ +/', ' ',$updateArray['delivery_street_name'].' '.$updateArray['delivery_address_number'].' '.$updateArray['delivery_address_ext']);
-			if (count($updateArray))
-			{
+			if (count($updateArray)) {
 				$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders', 'orders_id=\''.$this->get['orders_id'].'\'',$updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);				
 			}
 		}
 	}
-	
 	if ($order['orders_id'] and !$order['is_locked']) {
 		if ($this->post['manual_products_id'] > 0 && $this->post['manual_product_name']) {		
 			$this->post['manual_product_qty'] = str_replace(',', '.', $this->post['manual_product_qty']);
-			
 			if (empty($this->post['manual_product_price'])) {
 				$this->post['manual_product_price'] = '0';
 			}
-			
 			$sql = "insert into tx_multishop_orders_products (orders_id, products_id, qty, products_name, products_price, final_price, products_tax) values ('".$this->get['orders_id']."', '".$this->post['manual_products_id']."', '".$this->post['manual_product_qty']."', '". addslashes($this->post['manual_product_name'])."', '".$this->post['manual_product_price']."', '".$this->post['manual_product_price']."', '".$this->post['manual_product_tax']."')";
 			$GLOBALS['TYPO3_DB']->sql_query($sql);
-			
 			$orders_products_id = $GLOBALS['TYPO3_DB']->sql_insert_id();
-			
 			if (count($this->post['option']) > 0) {
 				foreach ($this->post['option'] as $optid => $optval) {
 					// get price and price prefix
 					$sql 	= "select pov.products_options_values_name, po.products_options_name, pa.price_prefix, pa.options_values_price from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id left join tx_multishop_products_options_values pov on pa.options_values_id = pov.products_options_values_id where po.language_id = '".$this->sys_language_uid."' and pov.language_id = '".$this->sys_language_uid."' and pa.options_id = '".$optid."' and pa.options_values_id = '".$optval."' and pa.products_id = " . $this->post['manual_products_id'];
 					$qry 	= $GLOBALS['TYPO3_DB']->sql_query($sql);
 					$rs 	= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-					
 					if (strpos($this->post['predef_price'][$optid], '-') !== false) {
 						$price_prefix = '-';
 						$this->post['predef_price'][$optid] = str_replace('-', '', $this->post['predef_price'][$optid]);
 						$price = $this->post['predef_price'][$optid];
-						
 					} else {
 						$price_prefix = '+';
 						$this->post['predef_price'][$optid] = str_replace('+', '', $this->post['predef_price'][$optid]);
 						$price = $this->post['predef_price'][$optid];
 					}
-					
 					if (empty($this->post['predef_price'][$optid])) {
 						$price 			= $rs['options_values_price'];
 						$price_prefix 	= $rs['price_prefix'];
 					}
-					
 					$option 		= $rs['products_options_name'];
 					$option_value 	= $rs['products_options_values_name'];
-					
 					$sql = "insert into tx_multishop_orders_products_attributes (orders_id, orders_products_id, products_options, products_options_values, options_values_price, price_prefix, attributes_values, products_options_id, products_options_values_id) values ('".$this->get['orders_id']."', '".$orders_products_id."', '".$option."', '".$option_value."', '".$price."', '".$price_prefix."', NULL, '".$optid."', '".$optval."')";
 					$GLOBALS['TYPO3_DB']->sql_query($sql);
 				}
 			}
-			
 			for ($y = 0; $y < count($this->post['manual_option']); $y++) {
 				if (strpos($this->post['manual_price'][$y], '-') !== false) {
 					$price_prefix = '-';
@@ -302,56 +251,44 @@ if (is_numeric($this->get['orders_id'])) {
 					$price_prefix = '+';
 					$this->post['manual_price'][$y] = str_replace('+', '', $this->post['manual_price'][$y]);
 				}
-			
 				if (!empty($this->post['manual_option'][$y]) && !empty($this->post['manual_values'][$y])) {
 					$sql = "insert into tx_multishop_orders_products_attributes (orders_id, orders_products_id, products_options, products_options_values, options_values_price, price_prefix, attributes_values, products_options_id, products_options_values_id) values ('".$this->get['orders_id']."', '".$orders_products_id."', '".$this->post['manual_option'][$y]."', '".$this->post['manual_values'][$y]."', '".$this->post['manual_price'][$y]."', '".$price_prefix."', NULL, '0', '0')";
 					$GLOBALS['TYPO3_DB']->sql_query($sql);
 				}
 			}
-			
 		} else if ($this->post['manual_products_id'] == 0 && $this->post['manual_product_name']) {
 			$this->post['manual_product_qty'] = str_replace(',', '.', $this->post['manual_product_qty']);
-			
 			if (empty($this->post['manual_product_price'])) {
 				$this->post['manual_product_price'] = '0';
 			}
-			
 			$sql = "insert into tx_multishop_orders_products (orders_id, products_id, qty, products_name, products_price, final_price, products_tax) values ('".$this->get['orders_id']."', '0', '".$this->post['manual_product_qty']."', '". addslashes($this->post['manual_product_name'])."', '".$this->post['manual_product_price']."', '".$this->post['manual_product_price']."', '".$this->post['manual_product_tax']."')";
 			$GLOBALS['TYPO3_DB']->sql_query($sql);
-			
 			$orders_products_id = $GLOBALS['TYPO3_DB']->sql_insert_id();
-			
 			if (count($this->post['option']) > 0) {
 				foreach ($this->post['option'] as $optid => $optval) {
 					// get price and price prefix
 					$sql 	= "select pov.products_options_values_name, po.products_options_name, pa.price_prefix, pa.options_values_price from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id left join tx_multishop_products_options_values pov on pa.options_values_id = pov.products_options_values_id where po.language_id = '".$this->sys_language_uid."' and pov.language_id = '".$this->sys_language_uid."' and pa.options_id = '".$optid."' and pa.options_values_id = '".$optval."' and pa.products_id = " . $this->post['manual_products_id'];
 					$qry 	= $GLOBALS['TYPO3_DB']->sql_query($sql);
 					$rs 	= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-					
 					if (strpos($this->post['predef_price'][$optid], '-') !== false) {
 						$price_prefix = '-';
 						$this->post['predef_price'][$optid] = str_replace('-', '', $this->post['predef_price'][$optid]);
 						$price = $this->post['predef_price'][$optid];
-						
 					} else {
 						$price_prefix = '+';
 						$this->post['predef_price'][$optid] = str_replace('+', '', $this->post['predef_price'][$optid]);
 						$price = $this->post['predef_price'][$optid];
 					}
-					
 					if (empty($this->post['predef_price'][$optid])) {
 						$price 			= $rs['options_values_price'];
 						$price_prefix 	= $rs['price_prefix'];
 					}
-					
 					$option 		= $rs['products_options_name'];
 					$option_value 	= $rs['products_options_values_name'];
-					
 					$sql = "insert into tx_multishop_orders_products_attributes (orders_id, orders_products_id, products_options, products_options_values, options_values_price, price_prefix, attributes_values, products_options_id, products_options_values_id) values ('".$this->get['orders_id']."', '".$orders_products_id."', '".$option."', '".$option_value."', '".$price."', '".$price_prefix."', NULL, '".$optid."', '".$optval."')";
 					$GLOBALS['TYPO3_DB']->sql_query($sql);
 				}
 			}
-			
 			for ($y = 0; $y < count($this->post['manual_option']); $y++) {
 				if (strpos($this->post['manual_price'][$y], '-') !== false) {
 					$price_prefix = '-';
@@ -360,36 +297,29 @@ if (is_numeric($this->get['orders_id'])) {
 					$price_prefix = '+';
 					$this->post['manual_price'][$y] = str_replace('+', '', $this->post['manual_price'][$y]);
 				}
-
 				if (!empty($this->post['manual_option'][$y]) && !empty($this->post['manual_values'][$y])) {
 					$sql = "insert into tx_multishop_orders_products_attributes (orders_id, orders_products_id, products_options, products_options_values, options_values_price, price_prefix, attributes_values, products_options_id, products_options_values_id) values ('".$this->get['orders_id']."', '".$orders_products_id."', '".$this->post['manual_option'][$y]."', '".$this->post['manual_values'][$y]."', '".$this->post['manual_price'][$y]."', '".$price_prefix."', NULL, '0', '0')";
 					$GLOBALS['TYPO3_DB']->sql_query($sql);
 				}
 			}
 		}
-		
 		if (is_numeric($this->post['orders_products_id']) > 0 && $this->post['product_name']) {
 			$this->post['product_qty'] = str_replace(',', '.', $this->post['product_qty']);
-			
 			if (empty($this->post['product_price'])) {
 				$this->post['product_price'] = '0';
 			}
-			
 			$sql = "update tx_multishop_orders_products set products_id = '".$this->post['products_id']."', qty = '".$this->post['product_qty']."', products_name ='".addslashes($this->post['product_name'])."', products_price = '".addslashes($this->post['product_price'])."', final_price = '".$this->post['product_price']."', products_tax = '".$this->post['product_tax']."' where orders_id = ".$this->get['orders_id']." and orders_products_id = '".$this->post['orders_products_id']."'";
 			$GLOBALS['TYPO3_DB']->sql_query($sql);
-			
 			// clean up the order product attributes to prepare the update
 			$sql = "delete from tx_multishop_orders_products_attributes where orders_id = " . $this->get['orders_id'] . " and orders_products_id = " . $this->post['orders_products_id'];
 			$GLOBALS['TYPO3_DB']->sql_query($sql);
-			
 			// insert the update attributes
 			if (count($this->post['option']) > 0) {
 				foreach ($this->post['option'] as $optid => $optval) {
 					// get price and price prefix
 					$sql 	= "select pov.products_options_values_name, po.products_options_name, pa.price_prefix, pa.options_values_price from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id left join tx_multishop_products_options_values pov on pa.options_values_id = pov.products_options_values_id where po.language_id = '".$this->sys_language_uid."' and pov.language_id = '".$this->sys_language_uid."' and pa.options_id = '".$optid."' and pa.options_values_id = '".$optval."' and pa.products_id = " . $this->post['products_id'];
 					$qry 	= $GLOBALS['TYPO3_DB']->sql_query($sql);
-					$rs 	= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-						
+					$rs 	= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);	
 					if (strpos($this->post['option_price'][$optid], '-') !== false) {
 						$man_price_prefix = '-';
 						$this->post['option_price'][$optid] = str_replace('-', '', $this->post['option_price'][$optid]);
@@ -397,25 +327,20 @@ if (is_numeric($this->get['orders_id'])) {
 						$man_price_prefix = '+';
 						$this->post['option_price'][$optid] = str_replace('+', '', $this->post['option_price'][$optid]);
 					}
-					
 					$price_prefix 	= $rs['price_prefix'];
 					if ($price_prefix != $man_price_prefix) {
 						$price_prefix 	= $man_price_prefix;
 					}
-					
 					$price 			= $rs['options_values_price'];
 					if ($this->post['option_price'][$optid] != $rs['options_values_price']) {
 						$price 		= $this->post['option_price'][$optid];
 					}
-						
 					$option 		= $rs['products_options_name'];
-					$option_value 	= $rs['products_options_values_name'];
-						
+					$option_value 	= $rs['products_options_values_name'];			
 					$sql = "insert into tx_multishop_orders_products_attributes (orders_id, orders_products_id, products_options, products_options_values, options_values_price, price_prefix, attributes_values, products_options_id, products_options_values_id) values ('".$this->get['orders_id']."', '".$this->post['orders_products_id']."', '".$option."', '".$option_value."', '".$price."', '".$price_prefix."', NULL, '".$optid."', '".$optval."')";
 					$GLOBALS['TYPO3_DB']->sql_query($sql);
 				}
 			}
-			
 			for ($x = 0; $x < count($this->post['edit_manual_option']); $x++) {
 				if (strpos($this->post['edit_manual_price'][$x], '-') !== false) {
 					$price_prefix = '-';
@@ -424,14 +349,12 @@ if (is_numeric($this->get['orders_id'])) {
 					$price_prefix = '+';
 					$this->post['edit_manual_price'][$x] = str_replace('+', '', $this->post['edit_manual_price'][$x]);
 				}
-			
 				if (!empty($this->post['edit_manual_option'][$x]) && !empty($this->post['edit_manual_values'][$x])) {
 					$sql = "insert into tx_multishop_orders_products_attributes (orders_id, orders_products_id, products_options, products_options_values, options_values_price, price_prefix, attributes_values, products_options_id, products_options_values_id) values ('".$this->get['orders_id']."', '".$this->post['orders_products_id']."', '".$this->post['edit_manual_option'][$x]."', '".$this->post['edit_manual_values'][$x]."', '".$this->post['edit_manual_price'][$x]."', '".$price_prefix."', NULL, '0', '0')";
 					$GLOBALS['TYPO3_DB']->sql_query($sql);
 				}
 			}
 		}
-		
 		// delete single item in order
 		$redirect_after_delete = false;
 		if (isset($this->get['delete_product']) && $this->get['delete_product'] == 1) {
@@ -445,13 +368,11 @@ if (is_numeric($this->get['orders_id'])) {
 				$redirect_after_delete = true;
 			}
 		}
-		
 		if ($this->post) {
 			// updating the *_tax_data on orders, orders_products and orders_products_attributes
 			$sql_order = "select shipping_method_costs, payment_method_costs from tx_multishop_orders where orders_id = " . $this->get['orders_id'];
 			$qry_order = $GLOBALS['TYPO3_DB']->sql_query($sql_order);
 			$rs_order = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_order);
-	
 			$orders_tax['shipping_tax'] 				= (string) $shipping_tax['shipping_tax'];
 			$orders_tax['shipping_country_tax'] 		= (string) $shipping_tax['shipping_country_tax'];
 			$orders_tax['shipping_region_tax'] 			= (string) $shipping_tax['shipping_region_tax'];
@@ -464,15 +385,12 @@ if (is_numeric($this->get['orders_id'])) {
 			$orders_tax['payment_total_tax_rate'] 		= (string) $payment_tax['payment_total_tax_rate'];
 			$orders_tax['payment_country_tax_rate'] 	= (string) $payment_tax['payment_country_tax_rate'];
 			$orders_tax['payment_region_tax_rate'] 		= (string) $payment_tax['payment_region_tax_rate'];
-			
 			$grand_total['shipping_cost'] 				= $rs_order['shipping_method_costs'];
 			$grand_total['payment_cost'] 				= $rs_order['payment_method_costs'];
 			$grand_total['shipping_tax'] 				= $orders_tax['shipping_tax'];
 			$grand_total['payment_tax'] 				= $orders_tax['payment_tax'];
-			
 			$total_order_tax['shipping_tax'] 			= $orders_tax['shipping_tax'];
 			$total_order_tax['payment_tax'] 			= $orders_tax['payment_tax'];
-			
 			$sql_order_products = "select orders_products_id, products_id, qty, final_price, products_tax from tx_multishop_orders_products where orders_id = " . $this->get['orders_id'];
 			$qry_order_products = $GLOBALS['TYPO3_DB']->sql_query($sql_order_products);
 			while ($rs_order_products = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_order_products)) {
@@ -481,83 +399,64 @@ if (is_numeric($this->get['orders_id'])) {
 				$product_opid 			= $rs_order_products['orders_products_id'];
 				$product_tax 			= $rs_order_products['products_tax'];
 				$products_id 			= $rs_order_products['products_id'];
-				
 				if ($products_id > 0) {
 					$product 		= mslib_fe::getProduct($products_id);
 					$tax_ruleset 	= mslib_fe::taxRuleSet($product['tax_id'], 0, $country['cn_iso_nr'], $zone['zn_country_iso_nr']);
-					
 					$tax_rate 			= ($tax_ruleset['total_tax_rate']/100);
 					$region_tax_rate 	= (isset($tax_ruleset['state_tax_rate']) ? ($tax_ruleset['state_tax_rate']/100) : 0);
 					$country_tax_rate 	= (isset($tax_ruleset['country_tax_rate']) ? ($tax_ruleset['country_tax_rate']/100) : 0);
-					
 					$product_country_tax	= mslib_fe::taxDecimalCrop($product_final_price * $country_tax_rate);
 					$product_region_tax 	= mslib_fe::taxDecimalCrop($product_final_price * $region_tax_rate);
 					if ($country_tax_rate && $region_tax_rate) {
 						$product_tax = $product_country_tax + $product_region_tax;
-					
 					} else {
 						$product_tax = mslib_fe::taxDecimalCrop($product_final_price * $tax_rate);
 					}
-					
 				} else {
 					$tax_rate = ($rs_order_products['products_tax']/100);
 					$product_tax = mslib_fe::taxDecimalCrop($product_final_price * $tax_rate);
 				}
-				
 				$product_tax_data['country_tax_rate'] 		= (string) $country_tax_rate;
 				$product_tax_data['region_tax_rate'] 		= (string) $region_tax_rate;
 				$product_tax_data['total_tax_rate'] 		= (string) $tax_rate;
 				$product_tax_data['country_tax'] 			= (string) $product_country_tax;
 				$product_tax_data['region_tax'] 			= (string) $product_region_tax;
 				$product_tax_data['total_tax'] 				= (string) $product_tax;
-				
 				$grand_total['product_price'] 	+= $product_final_price * $product_qty;
 				$grand_total['product_tax'] 	+= $product_tax * $product_qty;
-				
 				$total_order_tax['product_tax'] += $product_tax * $product_qty;
-				
 				$sql_orders_attributes 	= "select orders_products_attributes_id, price_prefix, options_values_price from tx_multishop_orders_products_attributes where orders_products_id = " . $rs_order_products['orders_products_id'] . " and orders_id = " . $this->get['orders_id'];
 				$qry_orders_attributes 	= $GLOBALS['TYPO3_DB']->sql_query($sql_orders_attributes);
 				while ($rs_orders_attributes = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_orders_attributes)) {
 					$attr_id 		= $rs_orders_attributes['orders_products_attributes_id'];
 					$price_prefix 	= $rs_orders_attributes['price_prefix'];
 					$attr_price 	= $rs_orders_attributes['options_values_price'];
-					
 					$row_country_tax 	= mslib_fe::taxDecimalCrop(($price_prefix.$price) * $country_tax_rate);
 					$row_region_tax 	= mslib_fe::taxDecimalCrop(($price_prefix.$price) * $region_tax_rate);
 					if ($country_tax_rate && $region_tax_rate) {
 						$row_tax = $row_country_tax + $row_region_tax;
 					} else {
 						$row_tax = mslib_fe::taxDecimalCrop(($price_prefix.$attr_price) * $tax_rate);
-					}
-					
+					}			
 					$attribute_tax['country_tax'] 	= $row_country_tax;
 					$attribute_tax['region_tax'] 	= $row_region_tax;
 					$attribute_tax['tax'] 			= $row_tax;
-					
 					$updateArray = array();
 					$updateArray['attributes_tax_data'] = serialize($attribute_tax);
-					
 					$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders_products_attributes', 'orders_products_attributes_id = \''.$attr_id.'\'',$updateArray);
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-					
 					$grand_total['product_attributes_price'] 				+= ($price_prefix.$attr_price) * $product_qty;
 					$grand_total['product_attributes_tax']					+= $row_tax;
 					$product_tax_data['total_attributes_tax'] 	+= $row_tax;
 				}
-				
 				$product_tax_data['total_attributes_tax'] = (string) $product_tax_data['total_attributes_tax'];
-				
 				$updateArray = array();
 				$updateArray['products_tax_data'] = serialize($product_tax_data);
-				
 				$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders_products', 'orders_products_id = \''.$product_opid.'\'',$updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			}
-			
 			$orders_tax['grand_total'] 					= (string) array_sum($grand_total);
 			$orders_tax['total_orders_tax'] 			= (string) array_sum($total_order_tax);
-			
 			$updateArray = array();
 			$updateArray['orders_tax_data'] = serialize($orders_tax);
 			$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders', 'orders_id = \''.$this->get['orders_id'].'\'',$updateArray);
@@ -568,19 +467,16 @@ if (is_numeric($this->get['orders_id'])) {
 			$mslib_order=t3lib_div::makeInstance('tx_mslib_order');
 			$mslib_order->init($this);
 			$mslib_order->repairOrder($this->get['orders_id']);				
-		}
-				
+		}		
 		if ($redirect_after_delete) {
 			// to redirect to 'normal url' after successfull deletion of item in order
 			echo '<script>location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order\'</script>';
 		}
-		
 		// redirect after editing or adding order product
 		if (!empty($this->post['product_name']) || !empty($this->post['manual_product_name'])) {
 			echo '<script>location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order\'</script>';
 		}
 	}
-	
 	$str="SELECT *, o.crdate, o.status, osd.name as orders_status from tx_multishop_orders o left join tx_multishop_orders_status os on o.status=os.id left join tx_multishop_orders_status_description osd on (os.id=osd.orders_status_id AND o.language_id=osd.language_id) where o.orders_id='".$this->get['orders_id']."'";
 	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 	$orders=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
@@ -589,8 +485,7 @@ if (is_numeric($this->get['orders_id'])) {
 			$updateArray=array();		
 			if ($this->post['expected_delivery_date']) 	{
 				$updateArray['expected_delivery_date'] =	strtotime($this->post['expected_delivery_date']);
-			}
-			
+			}		
 			if ($this->post['track_and_trace_code']) {
 				$updateArray['track_and_trace_code'] =	$this->post['track_and_trace_code'];		
 			}
@@ -608,7 +503,6 @@ if (is_numeric($this->get['orders_id'])) {
 				$orders['order_memo']=$this->post['order_memo'];			
 			}
 		}
-		
 		if ($this->post['order_status']) {
 			// first get current status
 			if ($this->post['order_status']==$orders['status']) {
@@ -619,14 +513,12 @@ if (is_numeric($this->get['orders_id'])) {
 			} else {
 				$continue_update=1;
 			}
-			
 			$close_window = 1;			
 			if ($continue_update) {
 				// dynamic variables
 				mslib_befe::updateOrderStatus($this->get['orders_id'],$this->post['order_status'],$this->post['customer_notified']);				
 			}
 		}
-		
 		if ($close_window) {
 			echo $this->pi_getLL('update_processed').'.';			
 			echo '
@@ -636,13 +528,11 @@ if (is_numeric($this->get['orders_id'])) {
 			';	
 			exit();
 		}
-		
 		$save_block='
 			<div class="save_block">
 				<input name="cancel" type="button" value="'.$this->pi_getLL('admin_cancel').'" onClick="parent.window.hs.close();"  class="submit" />
 				<input name="Submit" type="submit" value="'.$this->pi_getLL('admin_save').'"  class="submit" />
-			</div>';
-					
+			</div>';	
 		// count total products
 		$total_amount=0;
 		$str2="SELECT * from tx_multishop_orders_products where orders_id='".$orders['orders_id']."'";
@@ -661,25 +551,18 @@ if (is_numeric($this->get['orders_id'])) {
 			// now count the attributes eof
 		}
 		// count eof products
-		
 		$order_date = strftime("%x",  $orders['crdate']);
 		$tmpcontent='';
 		$tmpcontent.='
 <script language="JavaScript" type="text/JavaScript">
-	function CONFIRM()
-	{
-		if (confirm("'.addslashes($this->pi_getLL('are_you_sure')).'?"))
-		{
+	function CONFIRM() {
+		if (confirm("'.addslashes($this->pi_getLL('are_you_sure')).'?")) {
 			return true;
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
-</script>
-';
-
+</script>';
 $enabled_countries = mslib_fe::loadEnabledCountries();
 $dont_overide_billing_countries = false;
 $dont_overide_delivery_countries = false;
@@ -688,7 +571,6 @@ foreach ($enabled_countries as $country) {
 	if (strtolower($orders['billing_country'])==strtolower($country['cn_short_en'])) {
 		$dont_overide_billing_countries = true;
 	}
-	
 	$delivery_countries[] = '<option value="'.strtolower($country['cn_short_en']).'" '.((strtolower($orders['delivery_country'])==strtolower($country['cn_short_en']))?'selected':'').'>'.htmlspecialchars(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$country['cn_short_en'])).'</option>';
 	if (strtolower($orders['delivery_country'])==strtolower($country['cn_short_en'])) {
 		$dont_overide_delivery_countries = true;
@@ -700,14 +582,12 @@ if ($dont_overide_billing_countries) {
 	$billing_countries = array_merge(array('<option value="'.$orders['billing_country'].'">'.$orders['billing_country'].'</option>'),$billing_countries);
 }
 $billing_countries_sb ='<select name="tx_multishop_pi1[billing_country]" id="edit_billing_country">'.implode("\n",$billing_countries).'</select>';
-
 if ($dont_overide_delivery_countries) {
 	$delivery_countries = array_merge(array('<option value="">'.ucfirst($this->pi_getLL('choose_country')).'</option>'),$delivery_countries);
 } else {
 	$delivery_countries = array_merge(array('<option value="'.$orders['delivery_country'].'">'.$orders['delivery_country'].'</option>'),$delivery_countries);
 }
 $delivery_countries_sb = '<select name="tx_multishop_pi1[delivery_country]" id="edit_delivery_country">'.implode("\n",$delivery_countries).'</select>';
-
 	$tmpcontent.='
 	<fieldset class="tabs-fieldset">
 		<legend>'.$this->pi_getLL('address_details').'</legend>
@@ -717,9 +597,7 @@ $delivery_countries_sb = '<select name="tx_multishop_pi1[delivery_country]" id="
 					<table>
 					<tr>
 						<td align="left" valign="top">
-						<h3>'.$this->pi_getLL('billing_details').'</h3>
-';
-
+						<h3>'.$this->pi_getLL('billing_details').'</h3>';
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	$tmpcontent.='<div class="edit_billing_details_container" id="edit_billing_details_container" style="display:none">
 	<div class="account-field">
@@ -904,7 +782,6 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	$tmpcontent .= '<span><a href="#" id="edit_delivery_info">['.$this->pi_getLL('edit').']</a></span>';
 }
 $tmpcontent .= '</div>';
-
 $tmpcontent.='
 						</td>
 					</tr>
@@ -1097,13 +974,17 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 				$item['name'].=' ('.$this->pi_getLL('hidden_in_checkout').')';
 			}
 			$optionItems[]='<option value="'.$item['id'].'"'.($code==$orders['payment_method']?' selected':'').'>'.htmlspecialchars($item['name']).'</option>';
-			if ($code==$orders['payment_method']) $dontOverrideDefaultOption=1;
+			if ($code==$orders['payment_method']) {
+				$dontOverrideDefaultOption=1;
+			}
 		}		
-		if ($dontOverrideDefaultOption) $optionItems = array_merge(array('<option value="">'.ucfirst($this->pi_getLL('choose')).'</option>'),$optionItems);
-		else							$optionItems = array_merge(array('<option value="">'.($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']).'</option>'),$optionItems);
+		if ($dontOverrideDefaultOption) {
+			$optionItems = array_merge(array('<option value="">'.ucfirst($this->pi_getLL('choose')).'</option>'),$optionItems);
+		} else {
+			$optionItems = array_merge(array('<option value="">'.($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']).'</option>'),$optionItems);
+		}
 		$tmpcontent.='<select name="payment_method">'.implode("\n",$optionItems).'</select>';
-	}
-	else {
+	} else {
 		$tmpcontent.=($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']);
 	}		
 } else {
@@ -1127,33 +1008,47 @@ if ($orders['customer_comments']) {
 $tmpcontent.='
 <fieldset class="tabs-fieldset">
 <legend>'.$this->pi_getLL('product_details').'</legend>';
-
 		$tr_type='even';
 		$tmpcontent.='<table class="msZebraTable msadmin_border" width="100%">';
-		if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
-			$tmpcontent.='<tr><th class="cell_products_id">'.$this->pi_getLL('products_id').'</th><th class="cell_products_qty">'.$this->pi_getLL('qty').'</th><th class="cell_products_name">'.$this->pi_getLL('products_name').'</th><th class="cell_products_normal_price">'.$this->pi_getLL('normal_price').'</th><th  class="cell_products_vat">'.$this->pi_getLL('vat').'</th><th class="cell_products_final_price">'.$this->pi_getLL('final_price_ex_vat').'</th><th>&nbsp;</th></tr>';
-		} else {
-			$tmpcontent.='<tr><th class="cell_products_id">'.$this->pi_getLL('products_id').'</th><th class="cell_products_qty">'.$this->pi_getLL('qty').'</th><th class="cell_products_name">'.$this->pi_getLL('products_name').'</th><th class="cell_products_normal_price">'.$this->pi_getLL('normal_price').'</th><th class="cell_products_vat">'.$this->pi_getLL('vat').'</th><th class="cell_products_final_price">'.$this->pi_getLL('final_price_ex_vat').'</th></tr>';
+		$order_product_level_th = '';
+		if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+			$all_orders_status=mslib_fe::getAllOrderStatus();
+			$order_product_level_th = '<th class="cell_status">'.$this->pi_getLL('order_status').'</th>';
 		}
-		
+		if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
+			$tmpcontent.='<tr><th class="cell_products_id">'.$this->pi_getLL('products_id').'</th><th class="cell_products_qty">'.$this->pi_getLL('qty').'</th><th class="cell_products_name">'.$this->pi_getLL('products_name').'</th>'.$order_product_level_th.'<th class="cell_products_normal_price">'.$this->pi_getLL('normal_price').'</th><th  class="cell_products_vat">'.$this->pi_getLL('vat').'</th><th class="cell_products_final_price">'.$this->pi_getLL('final_price_ex_vat').'</th><th>&nbsp;</th></tr>';
+		} else {
+			$tmpcontent.='<tr><th class="cell_products_id">'.$this->pi_getLL('products_id').'</th><th class="cell_products_qty">'.$this->pi_getLL('qty').'</th><th class="cell_products_name">'.$this->pi_getLL('products_name').'</th>'.$order_product_level_th.'<th class="cell_products_normal_price">'.$this->pi_getLL('normal_price').'</th><th class="cell_products_vat">'.$this->pi_getLL('vat').'</th><th class="cell_products_final_price">'.$this->pi_getLL('final_price_ex_vat').'</th></tr>';
+		}
 		$total_tax=0;
 		if (is_array($orders_products) and count($orders_products)) {
 			foreach ($orders_products as $order) {
-				if (!$tr_type or $tr_type=='even') 	$tr_type='odd';
-				else								$tr_type='even';
-							
+				if (!$tr_type or $tr_type=='even') {
+					$tr_type='odd';
+				} else {
+					$tr_type='even';
+				}		
 				$tmpcontent.='<tr class="'.$tr_type.'">';
-				
 				if (($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) and ($this->get['edit_product'] == 1 && $this->get['order_pid'] == $order['orders_products_id'])) {
 					$tmpcontent.='<td align="right" class="cell_products_products_id">'.$order['products_id'].'<input type="hidden" id="edit_product_row_counter" value="0"></td>';		
 					$tmpcontent.='<td align="right" class="cell_products_qty"><input type="hidden" name="products_id" id="products_id" value="'.$order['products_id'].'"><input type="hidden" name="orders_products_id" value="'.$order['orders_products_id'].'"><input class="text" style="width:25px" type="text" name="product_qty" value="'.round($order['qty'],13).'" /></td>';		
 					$tmpcontent.='<td align="left" class="cell_products_name"><input class="product_name_input" type="text" name="product_name" value="'.$order['products_name'].'" />
-					</td>';	
-					
+					</td>';
+					if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+						$tmpcontent.='<td align="center" class="cell_products_status">';
+						//<div class="orders_status_button_gray" title="'.htmlspecialchars($order['orders_status']).'">'.$order['orders_status'].'</div>
+						$tmpcontent.='<select name="order_product_status" class="change_order_product_status" rel="'.$order['orders_products_id'].'" id="orders_'.$order['orders_products_id'].'">';
+						if (is_array($all_orders_status)) {
+							foreach ($all_orders_status as $item) {
+								$tmpcontent.='<option value="'.$item['id'].'"'.($item['id']==$order['status']?' selected':'').'>'.$item['name'].'</option>'."\n";
+							}
+						}
+						$tmpcontent.='</select>';
+						$tmpcontent.='</td>';
+					}
 					$tmpcontent.='<td align="right" class="cell_products_normal_price"><input class="text" style="width:44px" type="text" name="product_price" id="product_price" value="'.$order['products_price'].'" /></td>';	
 					$tmpcontent.='<td align="right" class="cell_products_vat"><input class="text" style="width:40px" type="text" name="product_tax" value="'.$order['products_tax'].'" /> %</td>';	
 					$tmpcontent.='<td align="right" class="cell_products_final_price">'.mslib_fe::amount2Cents($order['final_price'],0).'</td>';
-					
 				} else {
 					$row=array();					
 					$where='';
@@ -1182,38 +1077,45 @@ $tmpcontent.='
 					$row[4]=number_format($order['products_tax']).'%';
 					$row[5]=mslib_fe::amount2Cents($order['qty']*$order['final_price'],0);
 					// custom hook that can be controlled by third-party plugin
-					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_order.php']['editOrderListItemPreHook']))
-					{
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_order.php']['editOrderListItemPreHook'])) {
 						$params = array (
 							'order' => &$order,
 							'row' => &$row
-						); 
-						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_order.php']['editOrderListItemPreHook'] as $funcRef)
-						{
+						);
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_order.php']['editOrderListItemPreHook'] as $funcRef) {
 							t3lib_div::callUserFunction($funcRef, $params, $this);
 						}
 					}	
 					// custom hook that can be controlled by third-party plugin eof
 					$tmpcontent.='<td align="right" class="cell_products_products_id">'.$row[0].'</td>';		
 					$tmpcontent.='<td align="right" class="cell_products_qty">'.round($row[1],13).'</td>';
-					$tmpcontent.='<td align="left" class="cell_products_name">'.$row[2].'</td>';		
-					$tmpcontent.='<td align="right" class="cell_products_normal_price">'.$row[3].'</td>';	
+					$tmpcontent.='<td align="left" class="cell_products_name">'.$row[2].'</td>';
+					if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+						$tmpcontent.='<td align="center" class="cell_products_status">';
+						//<div class="orders_status_button_gray" title="'.htmlspecialchars($order['orders_status']).'">'.$order['orders_status'].'</div>
+						$tmpcontent.='<select name="order_product_status" class="change_order_product_status" rel="'.$order['orders_products_id'].'" id="orders_'.$order['orders_products_id'].'">';
+						if (is_array($all_orders_status)) {
+							foreach ($all_orders_status as $item) {
+								$tmpcontent.='<option value="'.$item['id'].'"'.($item['id']==$order['status']?' selected':'').'>'.$item['name'].'</option>'."\n";
+							}
+						}
+						$tmpcontent.='</select>';
+						$tmpcontent.='</td>';
+					}
+					$tmpcontent.='<td align="right" class="cell_products_normal_price">'.$row[3].'</td>';
 					$tmpcontent.='<td align="right" class="cell_products_vat">'.$row[4].'</td>';	
 					$tmpcontent.='<td align="right" class="cell_products_final_price">'.$row[5].'</td>';					
 				}
 				if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 					if (!$this->get['edit_product'] || ($this->get['edit_product'] && $this->get['order_pid'] != $order['orders_products_id'])) {
 						$tmpcontent.='<td align="right" class="cell_products_action">
-						
 						<input type="button" value="'.$this->pi_getLL('edit').'" onclick="location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order&edit_product=1&order_pid='.$order['orders_products_id'].'\'" class="msadmin_button">
-						
 						<a href="'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order&delete_product=1&order_pid='.$order['orders_products_id'].'" style="text-decoration:none"><input type="button" value="'.$this->pi_getLL('delete').'" onclick="return CONFIRM();" class="msadmin_button"></a></td>';
 					} else {
 						$tmpcontent.='<td align="right" class="cell_products_action"><input type="button" value="'.$this->pi_getLL('cancel').'" onclick="location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order\'" class="msadmin_button">&nbsp;<input type="submit" value="'.$this->pi_getLL('save').'" class="msadmin_button"></td>';
 					}
 				}
-				
-				$tmpcontent.='</tr>';	
+				$tmpcontent.='</tr>';
 				if ($orders_products_attributes[$order['orders_products_id']]) {
 					$attr_counter = 0;
 					if ($this->get['edit_product'] && $this->get['order_pid'] == $order['orders_products_id']) {
@@ -1264,18 +1166,20 @@ $tmpcontent.='
 							}
 							
 							$tmpcontent .= '</div></td>';
-							$tmpcontent .= '<td align="right"><input class="text" style="width:44px" type="text" name="option_price['.$rs_option['products_options_id'].']" id="option_price_'.$rs_option['products_options_id'].'" value="'.$opt_price.'" /></td><td align="right">&nbsp;</td>';
-							
-							
+							if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+								$tmpcontent.='<td align="right">&nbsp;</td>';
+							}
+							$tmpcontent .= '<td align="right"><input class="text" style="width:44px" type="text" name="option_price['.$rs_option['products_options_id'].']" id="option_price_'.$rs_option['products_options_id'].'" value="'.$opt_price.'" /></td>';
+							$tmpcontent .= '<td align="right">&nbsp;</td>';
 							$tmpcontent .= '<td align="right">&nbsp;</td>';
 							
-							if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) $tmpcontent.='<td align="right">&nbsp;</td>';
+							if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
+								$tmpcontent.='<td align="right">&nbsp;</td>';
+							}
 							$tmpcontent.='</tr>';
 							
 							$attr_counter++;
-						
 						}
-						
 						if (count($manual_attr['optname']) > 0) {
 							foreach ($manual_attr['optname'] as $idx => $optname) {
 								$optvalue = $manual_attr['optvalue'][$idx];
@@ -1290,11 +1194,15 @@ $tmpcontent.='
 								$tmpcontent .= '<input type="text" class="manual_values_input text" name="edit_manual_values[]" value="'.$optvalue.'" />&nbsp;<input type="button" class="msadmin_button" value="-" onclick="edit_remove_manual_row(\''. $attr_counter.'\')">';
 									
 								$tmpcontent .= '</div></div></td>';
+								if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+									$tmpcontent.='<td align="right">&nbsp;</td>';
+								}
 								$tmpcontent .= '<td align="right"><input type="text" name="edit_manual_price[]" class="text" style="width:44px" value="'.$optprice.'"></td><td align="right">&nbsp;</td>';
 								
 								$tmpcontent .= '<td align="right">&nbsp;</td>';
-									
-								if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) $tmpcontent.='<td align="right">&nbsp;</td>';
+								if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
+									$tmpcontent.='<td align="right">&nbsp;</td>';
+								}
 								$tmpcontent.='</tr>';
 						
 								$attr_counter++;
@@ -1302,8 +1210,6 @@ $tmpcontent.='
 						}
 						
 					} else {
-
-						
 						foreach ($orders_products_attributes[$order['orders_products_id']] as $tmpkey => $options) {
 							if (is_numeric($options['products_options_id'])) {
 								$str="SELECT listtype from tx_multishop_products_options o where o.products_options_id='".$options['products_options_id']."' and language_id='".$this->sys_language_uid."'";
@@ -1329,6 +1235,9 @@ $tmpcontent.='
 								$cell_products_vat=$row[4];
 								$cell_products_final_price=mslib_fe::amount2Cents(($options['price_prefix'].$options['options_values_price']) * $row[1],0);
 							}
+							if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+								$tmpcontent.='<td align="right">&nbsp;</td>';
+							}
 							$tmpcontent.='<td align="right" class="cell_products_normal_price">'.$cell_products_normal_price.'</td>';	
 							$tmpcontent.='<td align="right" class="cell_products_vat">'.$cell_products_vat.'</td>';	
 							$tmpcontent.='<td align="right" class="cell_products_final_price">'.$cell_products_final_price.'</td>';							
@@ -1336,7 +1245,6 @@ $tmpcontent.='
 							if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 								$tmpcontent.='<td align="right">&nbsp;</td>';
 							}
-							
 							// count the vat
 							if ($options['options_values_price'] and $order['products_tax']) {
 								$item_tax = $order['qty'] * $attributes_tax_data['tax'];
@@ -1348,44 +1256,37 @@ $tmpcontent.='
 									$total_tax = $total_tax - $item_tax;
 								}
 							}
-
 							$tmpcontent.='</tr>';
 						}
 					}
-					
 				} else {
 					if ($this->get['edit_product'] && $this->get['order_pid'] == $order['orders_products_id']) {
 						$sql_option = "select po.products_options_name, po.products_options_id from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id where po.hide_in_cart=0 and po.language_id = '".$this->sys_language_uid."' and pa.products_id = " . $order['products_id'] . " group by pa.options_id";
 						$qry_option = $GLOBALS['TYPO3_DB']->sql_query($sql_option);
-					
 						while (($rs_option = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_option)) != false) {
 							$tmpcontent .= '<tr class="'.$tr_type.'"><td>&nbsp;</td><td>&nbsp;</td>';
 							$tmpcontent .= '<td align="left">'.$rs_option['products_options_name'].': ';
 							$tmpcontent .= '<select name="option['.$rs_option['products_options_id'].']" id="option_'.$rs_option['products_options_id'].'">';
-								
 							$sql_optval = "select pa.options_values_id, pov.products_options_values_name from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id left join tx_multishop_products_options_values pov on pa.options_values_id = pov.products_options_values_id where pov.language_id = '".$this->sys_language_uid."' and pa.options_id = '".$rs_option['products_options_id']."' and pa.products_id = " . $order['products_id'];
 							$qry_optval = $GLOBALS['TYPO3_DB']->sql_query($sql_optval);
-								
-								
 							while (($rs_optval = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_optval)) != false) {
 								$tmpcontent .= '<option value="'.$rs_optval['options_values_id'].'">'.$rs_optval['products_options_values_name'].'</option>';
 							}
 							$tmpcontent .= '</select>';
-								
 							$tmpcontent .= '</td>';
-							$tmpcontent .= '<td align="right">&nbsp;</td><td align="right">&nbsp;</td>';
-								
-								
+							if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+								$tmpcontent.='<td align="right">&nbsp;</td>';
+							}
 							$tmpcontent .= '<td align="right">&nbsp;</td>';
-								
-							if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) $tmpcontent.='<td align="right">&nbsp;</td>';
+							$tmpcontent .= '<td align="right">&nbsp;</td>';
+							$tmpcontent .= '<td align="right">&nbsp;</td>';
+							if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
+								$tmpcontent.='<td align="right">&nbsp;</td>';
+							}
 							$tmpcontent.='</tr>';
-					
 						}
-					
 					}
 				}
-		
 				// count the vat
 				if ($order['final_price'] and $order['products_tax']) {
 					$product_tax_data = unserialize($order['products_tax_data']);
@@ -1441,7 +1342,10 @@ $tmpcontent.='
 						</td>
 					</tr>
 				</table>
-			</td>';		
+			</td>';
+			if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
+				$tmpcontent.='<td align="right">&nbsp;</td>';
+			}
 			$tmpcontent.='<td align="right" valign="top">
 				<table width="100%" cellspacing="0" cellpadding="0" style="border:0px;">
 					<tr id="price_row_start">
@@ -1478,24 +1382,17 @@ $tmpcontent.='
 		} else {
 			$colspan = 7;
 		}
-		
 //		$tmpcontent.='<tr><td colspan="'.$colspan.'"><hr class="hr"></td></tr>';
-		
 		$tmpcontent.='<tr><td align="right" colspan="'.$colspan.'" class="">';
-		if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked'])
-		{
+		if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 			$shipping_costs='<input name="tx_multishop_pi1[shipping_method_costs]" type="text" value="'.round($orders['shipping_method_costs'],4).'" class="align_right" style="width:60px">';
 			$payment_costs='<input name="tx_multishop_pi1[payment_method_costs]" type="text" value="'.round($orders['payment_method_costs'],4).'" class="align_right" style="width:60px">';
-		}
-		else
-		{
+		} else {
 			$shipping_costs=mslib_fe::amount2Cents($orders['shipping_method_costs'],0);
 			$payment_costs=mslib_fe::amount2Cents($orders['payment_method_costs'],0);
 		}
-		
 		$orders_tax_data = unserialize($orders['orders_tax_data']);
-		if ($orders_tax_data['shipping_tax'] || $orders_tax_data['payment_tax'])
-		{
+		if ($orders_tax_data['shipping_tax'] || $orders_tax_data['payment_tax']) {
 			$total_tax += $orders_tax_data['shipping_tax'];
 			$total_tax += $orders_tax_data['payment_tax'];
 		}
@@ -2122,6 +2019,20 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 	$content.='
 	<script type="text/javascript"> 
 	jQuery(document).ready(function($) {
+		$(\'.change_order_product_status\').change(function() {
+			var order_pid = $(this).attr("rel");
+			var orders_status_id = $("option:selected", this).val();
+			var orders_status_label = $("option:selected", this).text();
+			if (confirm("Do you want to change orders product id: " + order_pid + " to status: " + orders_status_label)) {
+				$.ajax({
+					type: "POST",
+					url: "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_update_order_product_status').'",
+					dataType: \'json\',
+					data: "tx_multishop_pi1[orders_id]='. $order['orders_id'] .'&tx_multishop_pi1[order_product_id]=" + order_pid + "&tx_multishop_pi1[orders_status_id]=" + orders_status_id,
+					success: function(msg) {}
+				});
+			}
+		});
 		var url_relatives = "'. mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax_product_relatives') .'";
 		jQuery(".tab_content").hide(); 
 		jQuery("ul.tabs li:first").addClass("active").show();
@@ -2185,6 +2096,7 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 	$content.=$save_block.'
 			</form>	
 		</div>
-	</div>';	
+	</div>';
+
 }
 ?>

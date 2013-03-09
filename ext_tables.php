@@ -125,12 +125,10 @@ if (TYPO3_MODE == 'BE') {
 	t3lib_extMgm::addModule('web', 'txmultishopM1', '', t3lib_extMgm::extPath($_EXTKEY) . 'mod1/');
 }
 include_once(t3lib_extMgm::extPath($_EXTKEY).'class.tx_multishop_addMiscFieldsToFlexForm.php');
-if (TYPO3_MODE == 'FE') {
-	// Autoloader works great in TYPO3 4.7.7. But in TYPO3 4.5.X the invalid namespace classes are not autoloaded so lets load it manually then too	
-	// PHP Fatal error:  Access to undeclared static property: t3lib_autoloader::$classNameToFileMapping in /shopcvs/skeleton/typo3_src-4.7.5/t3lib/class.t3lib_autoloader.php on line 151
-	require_once(t3lib_extMgm::extPath('multishop').'res/Cache_Lite-1.7.15/Cache/class.cache_lite.php');
-	require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_fe.php');
-	require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_befe.php');
-	require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_payment.php');
-}
+// Autoloader works great in TYPO3 4.7.7. But in TYPO3 4.5.X the invalid namespace classes are not autoloaded so lets load it manually then too	
+// PHP Fatal error:  Access to undeclared static property: t3lib_autoloader::$classNameToFileMapping in /shopcvs/skeleton/typo3_src-4.7.5/t3lib/class.t3lib_autoloader.php on line 151
+require_once(t3lib_extMgm::extPath('multishop').'res/Cache_Lite-1.7.15/Cache/class.cache_lite.php');
+require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_fe.php');
+require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_befe.php');
+require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_payment.php');
 ?>

@@ -28,6 +28,7 @@
       <label index="product">product</label>
       <label index="subtotal">Subtotal</label>
       <label index="total">Total</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">remove product from Basket</label>
       <label index="first_name">first name</label>
       <label index="middle_name">middle name</label>
@@ -690,6 +691,7 @@
       <label index="product">product</label>
       <label index="subtotal">Subtotaal</label>
       <label index="total">Totaal</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">haal product uit winkelmandje</label>
       <label index="first_name">voornaam</label>
       <label index="middle_name">tussenvoegsel</label>
@@ -1344,6 +1346,7 @@
       <label index="product">tuote</label>
       <label index="subtotal">yht</label>
       <label index="total">kaikki yhteensä</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">poista tuote ostoskorista</label>
       <label index="first_name">etunimi</label>
       <label index="middle_name">toinen nimi</label>
@@ -1749,6 +1752,7 @@
       <label index="product">Produk</label>
       <label index="subtotal">Subtotal</label>
       <label index="total">Total</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">Hapus produk dari keranjang belanja</label>
       <label index="first_name">Nama pertama</label>
       <label index="last_name">Nama lengkap</label>
@@ -2296,6 +2300,7 @@
       <label index="product">Produkt</label>
       <label index="subtotal">Zwischensumme</label>
       <label index="total">Summe</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">Produkt aus dem Warenkorb entfernen</label>
       <label index="first_name">Vorname</label>
       <label index="last_name">Nachname</label>
@@ -2849,6 +2854,7 @@
       <label index="product">producto</label>number
       <label index="subtotal">total parcial</label>
       <label index="total">total</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">retirar el producto de la canasta</label>
       <label index="first_name">nombre de pila</label>
       <label index="last_name">apellido</label>
@@ -3131,6 +3137,7 @@
       <label index="product">Produit</label>
       <label index="subtotal">Sous-total</label>
       <label index="total">Total</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">retirer le produit du panier</label>
       <label index="first_name">Prénom</label>
       <label index="last_name">Nom</label>
@@ -3411,6 +3418,7 @@
       <label index="product">продукт</label>
       <label index="subtotal">сума</label>
       <label index="total">общо</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">премахни продукта от количката</label>
       <label index="first_name">име</label>
       <label index="last_name">презиме</label>
@@ -3693,6 +3701,7 @@
       <label index="product">товар</label>
       <label index="subtotal">подсумма</label>
       <label index="total">Сумма</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">удалить из корзины</label>
       <label index="first_name">Имя</label>
       <label index="middle_name">Отчество</label>
@@ -3977,6 +3986,7 @@
       <label index="product">termék</label>
       <label index="subtotal">végösszeg</label>
       <label index="total">összes</label>
+      <label index="order_product_status">Status</label>
       <label index="remove_product_from_basket">Termék eltávolítása a kosárból</label>
       <label index="first_name">Keresztnév</label>
       <label index="last_name">Vezetéknév</label>

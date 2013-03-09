@@ -1898,8 +1898,7 @@ $str.="	  `products_viewed` int(11) NOT NULL,
 		}
 	}
 */	
-	function updateOrderStatus($orders_id,$orders_status,$mail_customer=0)
-	{
+	function updateOrderStatus($orders_id,$orders_status,$mail_customer=0) {
 
 		// dynamic variables
 		$order 				= mslib_fe::getOrder($orders_id);
@@ -2129,8 +2128,13 @@ $str.="	  `products_viewed` int(11) NOT NULL,
 				}				
 			}
 		}
-			
-	}	
+	}
+	function updateOrderProductStatus($orders_id,$order_product_id, $orders_status) {
+		$updateArray=array();
+		$updateArray['status']	=	$orders_status;
+		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders_products', 'orders_id=\''.$orders_id.'\' and orders_products_id = \''.$order_product_id.'\'',$updateArray);
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+	}
 	function getHashedPassword($password) {
 		$objPHPass = null;
 		if (t3lib_extMgm::isLoaded('t3sec_saltedpw')) {

@@ -72,8 +72,7 @@ if (mslib_fe::loggedin()) {
 			$pageset=mslib_fe::getOrdersPageSet($filter,$offset,$this->get['limit'],$orderby,$having,$select,$where,$from);
 			$tmporders=$pageset['orders'];
 			if (!$this->hideHeader) $tmp.='<h2>'.$this->pi_getLL('account_order_history').'</h2>';
-			if ($pageset['total_rows'] > 0)
-			{
+			if ($pageset['total_rows'] > 0) {
 				$tmp.='<table id="account_orders_history_listing">';
 				$tmp.='<tr>
 				<th class="cell_orders_id">'.$this->pi_getLL('orders_id').'</th>
@@ -119,7 +118,7 @@ if (mslib_fe::loggedin()) {
 					</td>';
 					$tmp.='</tr>';	
 				}
-				$tmp.='</table>';	
+				$tmp.='</table>';
 				// pagination
 				if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['ORDERS_LISTING_LIMIT'])
 				{

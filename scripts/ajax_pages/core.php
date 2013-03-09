@@ -75,14 +75,11 @@ switch ($this->ms['page'])
 		exit();
 	break;
 	case 'admin_update_orders_status':
-		if ($this->ADMIN_USER)
-		{
-			if (is_numeric($this->post['tx_multishop_pi1']['orders_id']) and is_numeric($this->post['tx_multishop_pi1']['orders_status_id']))
-			{
+		if ($this->ADMIN_USER) {
+			if (is_numeric($this->post['tx_multishop_pi1']['orders_id']) and is_numeric($this->post['tx_multishop_pi1']['orders_status_id'])) {
 				// hook
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/core.php']['adminUpdateOrdersStatus'])) {
 					$params = array ('orders_id' => &$this->post['tx_multishop_pi1']['orders_id'], 'orders_status_id' => $this->post['tx_multishop_pi1']['orders_status_id']);
-					
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/core.php']['adminUpdateOrdersStatus'] as $funcRef) {
 						t3lib_div::callUserFunction($funcRef, $params, $this);
 					}
@@ -93,6 +90,14 @@ switch ($this->ms['page'])
 		}
 		exit();
 	break;
+	case 'admin_update_order_product_status':
+		if ($this->ADMIN_USER) {
+			if (is_numeric($this->post['tx_multishop_pi1']['orders_id']) and is_numeric($this->post['tx_multishop_pi1']['order_product_id']) and is_numeric($this->post['tx_multishop_pi1']['orders_status_id'])) {
+				mslib_befe::updateOrderProductStatus($this->post['tx_multishop_pi1']['orders_id'], $this->post['tx_multishop_pi1']['order_product_id'], $this->post['tx_multishop_pi1']['orders_status_id']);
+			}
+		}
+		exit();
+		break;
 	case 'update_currency':
 		// change selected currency + exchange rate and save it in temporary session
 		if ($this->post['tx_multishop_pi1']['selected_currency'])
