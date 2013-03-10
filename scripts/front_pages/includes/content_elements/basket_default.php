@@ -11,7 +11,15 @@ $subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
 
 $output['basket_header'] = '<a href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=shopping_cart').'">'.$this->pi_getLL('basket').'</a>';
 $cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
-$totalitems = mslib_fe::countCartQuantity();
+$totalitems=0;
+if (count($cart['products']) >0)
+{
+	foreach ($cart['products'] as $product)
+	{
+		if (is_numeric($product['qty'])) $totalitems=$totalitems+$product['qty'];
+	}
+}
+
 $output['total_items'] = (($totalitems==1)?sprintf($this->pi_getLL('you_have_item_in_your_cart'),$totalitems):sprintf($this->pi_getLL('you_have_items_in_your_cart'),$totalitems)).'.';
 if ($totalitems > 0)  $output['goto_shoppingcart_link'] = ' <a class="multishop_goto_checkout" href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=checkout').'">'.$this->pi_getLL('proceed_to_checkout').'</a>';
 
