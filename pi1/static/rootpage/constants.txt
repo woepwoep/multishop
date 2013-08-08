@@ -165,6 +165,15 @@ plugin.multishop {
 	# cat=plugin.multishop - templates/file; type=string; label= Basket File Path: Optionally specify the location of the template file that is being used for building up the basket. Example: fileadmin/templates/multishop/basket_default.tmpl.
 	basket_default_tmpl_path = EXT:multishop/templates/basket_default.tmpl
 	
+	# cat=plugin.multishop - templates/file; type=string; label= Edit Account File Path: Optionally specify the location of the template file that is being used for editing the account. Example: fileadmin/templates/multishop/edit_account.tmpl.
+	edit_account_tmpl_path=
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Order History File Path: Optionally specify the location of the template file that is being used for displaying My Orders. Example: fileadmin/templates/multishop/order_history_LOOP.tmpl.
+	order_history_tmpl_path=
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Pagination File Path: Optionally specify the location of the template file that is being used for displaying LOOP Pagination. Example: fileadmin/templates/multishop/pagination_LOOP.tmpl.
+	pagination_tmpl_path=
+	
 	# cat=plugin.multishop - templates/file; type=string; label= Searchform File Path: Optionally specify the location of the template file that is being used for building up the searchform. Example: fileadmin/templates/multishop/searchform.tmpl.
 	searchform_tmpl_path = EXT:multishop/templates/searchform.tmpl
 	
@@ -185,4 +194,7 @@ plugin.multishop {
 	
 	# cat=plugin.multishop - main; type=int+; label= TT address record ID of the store: The uid number of the tt_address record that contains the Store address details. This record is mandatory for correct calculation of VAT.
 	tt_address_record_id_store =
+
+	# cat=plugin.multishop - main; type=int+; label= LOOP_ReturningCustomerGroup: The ID number of the "klanten" record.
+	LOOP_ReturningCustomerGroup = 
 }

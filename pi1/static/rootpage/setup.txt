@@ -24,6 +24,7 @@ plugin.tx_multishop_pi1 {
 	includeJS={$plugin.multishop.includeJS}
 	includeCSS={$plugin.multishop.includeCSS}
 	shop_pid={$plugin.multishop.shop_pid}
+return_pid={$plugin.multishop.return_pid}
 	fe_admin_usergroup={$plugin.multishop.fe_admin_usergroup}
 	fe_rootadmin_usergroup={$plugin.multishop.fe_rootadmin_usergroup}
 	show_powered_by_multishop={$plugin.multishop.show_powered_by_multishop}
@@ -87,12 +88,16 @@ plugin.tx_multishop_pi1 {
 	products_relatives_tmpl_path={$plugin.multishop.products_relatives_tmpl_path}
 	categories_listing_tmpl_path={$plugin.multishop.categories_listing_tmpl_path}
 	basket_default_tmpl_path={$plugin.multishop.basket_default_tmpl_path}
+	edit_account_tmpl_path={$plugin.multishop.edit_account_tmpl_path}
 	searchform_tmpl_path={$plugin.multishop.searchform_tmpl_path}
 	crumbar_tmpl_path={$plugin.multishop.crumbar_tmpl_path}
 	manufacturers_listing_tmpl_path={$plugin.multishop.manufacturers_listing_tmpl_path}
 	shopping_cart_tmpl_path={$plugin.multishop.shopping_cart_tmpl_path}
 	tt_address_record_id_store={$plugin.multishop.tt_address_record_id_store}
 	disableFeFromCalculatingVatPrices={$plugin.multishop.disableFeFromCalculatingVatPrices}
+	LOOP_ReturningCustomerGroup={$plugin.multishop.LOOP_ReturningCustomerGroup}
+	order_history_tmpl_path={$plugin.multishop.order_history_tmpl_path}
+	pagination_tmpl_path={$plugin.multishop.pagination_tmpl_path}
 }
 # LOAD MULTISHOP APPLICATION (HEAD SECTION)
 
