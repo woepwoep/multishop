@@ -60,7 +60,7 @@ class tx_multishop_pi1 extends tslib_pibase {
     * @param    array   $conf: configuration array from TS
     * @return   void
 	 */
-	function construct($conf) {	
+	function construct($conf) {
 		$this->conf = $conf;
 		$this->pi_setPiVarDefaults();
 		$this->pi_loadLL();
